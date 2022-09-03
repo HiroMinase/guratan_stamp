@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -63,7 +64,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   addStampWidget(String fileName) {
     setState(() {
-      stampWidgets.add(StatefulDragArea(child: Image.asset("assets/stamp/$fileName", width: 60, height: 60)));
+      stampWidgets.add(
+        StatefulDragArea(
+          child: Image.asset(
+            "assets/stamp/$fileName",
+            width: 60,
+            height: 60,
+          )
+        )
+      );
     });
   }
 
@@ -122,7 +131,9 @@ class StatefulDragArea extends StatefulWidget {
 }
 
 class _DragAreaStateState extends State<StatefulDragArea> {
-  Offset position = const Offset(0, 0);
+  final Size windowSize = MediaQueryData.fromWindow(window).size;
+  late Offset position = Offset((windowSize.width / 2 - 30), (windowSize.height / 2 - 30));
+  // Offset position = const Offset(0, 0);
   double prevScale = 1;
   double scale = 1;
 
@@ -160,6 +171,8 @@ class _DragAreaStateState extends State<StatefulDragArea> {
           Positioned(
             left: position.dx,
             top: position.dy,
+            // left: position.dx > 0 ? position.dx : MediaQuery.of(context).size.width / 2 - 30,
+            // top: position.dy > 0 ? position.dy : MediaQuery.of(context).size.height / 2 - 100,
             child: Draggable(
               maxSimultaneousDrags: 1,
               feedback: widget.child,

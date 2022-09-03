@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
           fileName: fileName,
           widgetId: stampNamePositionsLength + 1,
           child: Image.asset(
-            "assets/stamp/$fileName",
+            "assets/stickers/$fileName",
             width: 60,
             height: 60,
           )
@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   mixStickers(BuildContext context, Map stampNamePositions) {
-    print(stampNamePositions);
+    print("ステッカーのfile名と座標群: $stampNamePositions");
     for (var namePosition in stampNamePositions.values) {
       mixImage(
         context,
@@ -111,20 +111,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future mixImage(BuildContext context, String fileName, double xPosition, double yPosition) async {
     final Uint8List? src = result ?? _pickImage?.readAsBytesSync();
-    final Uint8List dst = await loadFromAsset("assets/stamp/$fileName");
+    final Uint8List dst = await loadFromAsset("assets/stickers/$fileName");
 
     RenderBox? getBox = context.findRenderObject() as RenderBox;
     var localPos = getBox.globalToLocal(Offset(xPosition, yPosition));
-    int x = localPos.dx.toInt();
-    int y = localPos.dy.toInt();
+
+    // TODO: ここが無理矢理すぎるのでどうにか解決したい
+    // Image Widget から取得した Offset をそのまま MixImageOption に当てるだけではダメそう
+    int x = localPos.dx.toInt() * 4 + 25;
+    int y = localPos.dy.toInt() * 4 - 143;
 
     final ImageEditorOption optionGroup = ImageEditorOption();
     optionGroup.outputFormat = const OutputFormat.png();
 
-    print(xPosition);
-    print(x);
+    print("ぐらたんのX座標: $xPosition");
+    print("ローカルポジションに変換後のX座標: $x");
 
-    print(y);
+    print("ぐらたんのY座標: $yPosition");
+    print("ローカルポジションに変換後のY座標: $y");
 
     optionGroup.addOption(
       MixImageOption(
@@ -143,9 +147,11 @@ class _MyHomePageState extends State<MyHomePage> {
       if (result == null) {
         editImage = null;
       } else {
+        result = result;
         editImage = MemoryImage(result!);
       }
 
+      stampWidgets = [];
       _pickImage = null;
     });
   }
@@ -210,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               border: Border.all(width: 1.0, color: Colors.black),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Text("完成！")
+                            child: const Text("画像を生成")
                         ),
                       ),
                     ),
@@ -257,7 +263,7 @@ class _DragAreaStateState extends State<StatefulDragArea> {
   }
 
   updatePosition(Offset newPosition, Function syncStickerPositions) {
-    print(newPosition);
+    print("移動後のOffset: $newPosition");
     setState(() {
       position = Offset(newPosition.dx, newPosition.dy - 103);
     });

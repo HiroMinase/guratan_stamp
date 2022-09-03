@@ -38,6 +38,12 @@ dependencies:
   # 画像アップロード、画像取得
   image_picker: ^0.8.2
 
+  # 画像編集
+  image_editor: ^1.1.0
+
+  # 状態管理
+  provider: ^6.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

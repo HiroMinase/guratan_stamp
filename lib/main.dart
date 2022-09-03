@@ -1,9 +1,15 @@
-import 'dart:async';
+import 'dart:core';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart' as picker;
+import 'package:image_editor/image_editor.dart';
+import 'package:provider/provider.dart';
+
+import 'package:guratan_stamp/StickerProvider.dart';
 
 // カメラ経由かギャラリー経由かを示すフラグ
 enum FileMode{
@@ -20,12 +26,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<StickerProvider>(
+          create: (context) => StickerProvider(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -40,32 +53,38 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  File? _image;
-  final _picker = ImagePicker();
+  File? _pickImage;
+  ImageProvider? editImage;
+  final _picker = picker.ImagePicker();
   List<Widget> stampWidgets = [];
+  Uint8List? result;
 
-  // 画像取得処理
+  BlendMode blendMode = BlendMode.srcOver;
+
+//  画像取得処理
   Future getImage(FileMode fileMode) async {
     late final dynamic pickedFile;
 
     // カメラからとギャラリーからの2通りの画像取得（パスの取得）を設定
     if (fileMode == FileMode.takePicture) {
-      pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
+      pickedFile = await _picker.pickImage(source: picker.ImageSource.camera, imageQuality: 100);
     } else {
-      pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 100);
+      pickedFile = await _picker.pickImage(source: picker.ImageSource.gallery, imageQuality: 100);
     }
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _pickImage = File(pickedFile.path);
       });
     }
   }
 
-  addStampWidget(String fileName) {
+  addStampWidget(String fileName, int stampNamePositionsLength, Function syncStickerPositions) {
     setState(() {
       stampWidgets.add(
         StatefulDragArea(
+          fileName: fileName,
+          widgetId: stampNamePositionsLength + 1,
           child: Image.asset(
             "assets/stamp/$fileName",
             width: 60,
@@ -74,10 +93,72 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       );
     });
+
+    syncStickerPositions(stampNamePositionsLength + 1, fileName, 0.0, 0.0);
+  }
+
+  mixStickers(BuildContext context, Map stampNamePositions) {
+    print(stampNamePositions);
+    for (var namePosition in stampNamePositions.values) {
+      mixImage(
+        context,
+        namePosition["fileName"],
+        namePosition["xPosition"],
+        namePosition["yPosition"],
+      );
+    }
+  }
+
+  Future mixImage(BuildContext context, String fileName, double xPosition, double yPosition) async {
+    final Uint8List? src = result ?? _pickImage?.readAsBytesSync();
+    final Uint8List dst = await loadFromAsset("assets/stamp/$fileName");
+
+    RenderBox? getBox = context.findRenderObject() as RenderBox;
+    var localPos = getBox.globalToLocal(Offset(xPosition, yPosition));
+    int x = localPos.dx.toInt();
+    int y = localPos.dy.toInt();
+
+    final ImageEditorOption optionGroup = ImageEditorOption();
+    optionGroup.outputFormat = const OutputFormat.png();
+
+    print(xPosition);
+    print(x);
+
+    print(y);
+
+    optionGroup.addOption(
+      MixImageOption(
+        x: x,
+        y: y,
+        width: 250,
+        height: 250,
+        target: MemoryImageSource(dst),
+        blendMode: blendMode,
+      ),
+    );
+
+    result = await ImageEditor.editImage(image: src!, imageEditorOption: optionGroup);
+
+    setState(() {
+      if (result == null) {
+        editImage = null;
+      } else {
+        editImage = MemoryImage(result!);
+      }
+
+      _pickImage = null;
+    });
+  }
+
+  Future<Uint8List> loadFromAsset(String key) async {
+    final ByteData byteData = await rootBundle.load(key);
+    return byteData.buffer.asUint8List();
   }
 
   @override
   Widget build(BuildContext context) {
+    final StickerProvider stickerProvider = Provider.of<StickerProvider>(context, listen: true);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -88,28 +169,52 @@ class _MyHomePageState extends State<MyHomePage> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (_image != null) Image.file(_image!),
-                if (_image == null) GestureDetector(
+                editImage != null ? Image(image: editImage!) : Container(),
+                if (_pickImage != null && editImage == null) Image.file(_pickImage!, fit: BoxFit.cover, width: double.infinity),
+                if (_pickImage == null) GestureDetector(
                   onTap: () {
                     getImage(FileMode.importFromGallery);
                   },
                   child: const Text("読み込み"),
                 ),
-                if (_image != null) GestureDetector(
-                  onTap: () {
-                    addStampWidget("guratan.png");
-                  },
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(width: 1.0, color: Colors.black),
+                if (_pickImage != null) Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        addStampWidget("guratan.png", stickerProvider.stampNamePositions.length, stickerProvider.syncStickerPositions);
+                      },
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(width: 1.0, color: Colors.black),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Text("スタンプを追加")
+                        ),
                       ),
-                      child: const Text("スタンプを追加")
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: () {
+                        mixStickers(context, stickerProvider.stampNamePositions);
+                      },
+                      child: Center(
+                        child: Container(
+                            padding: const EdgeInsets.all(10),
+                            margin: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(width: 1.0, color: Colors.black),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Text("完成！")
+                        ),
+                      ),
+                    ),
+                  ]
                 ),
               ]
             ),
@@ -122,9 +227,11 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class StatefulDragArea extends StatefulWidget {
-  const StatefulDragArea({Key? key, required this.child}) : super(key: key);
+  const StatefulDragArea({Key? key, required this.child, required this.fileName, required this.widgetId}) : super(key: key);
 
   final Widget child;
+  final String fileName;
+  final int widgetId;
 
   @override
   State<StatefulDragArea> createState() => _DragAreaStateState();
@@ -138,31 +245,30 @@ class _DragAreaStateState extends State<StatefulDragArea> {
   double scale = 1;
 
   updateScale(double zoom) {
-    print(zoom);
     setState(() {
       scale = prevScale * zoom;
     });
   }
 
   commitScale() {
-    print(scale);
     setState(() {
       prevScale = scale;
     });
   }
 
-  updatePosition(Offset newPosition) {
+  updatePosition(Offset newPosition, Function syncStickerPositions) {
     print(newPosition);
-    print(newPosition.dx);
-    print(newPosition.dy);
-    print(Offset(newPosition.dx, newPosition.dy - 103));
     setState(() {
       position = Offset(newPosition.dx, newPosition.dy - 103);
     });
+
+    syncStickerPositions(widget.widgetId, widget.fileName, position.dx, position.dy);
   }
 
   @override
   Widget build(BuildContext context) {
+    final StickerProvider stickerProvider = Provider.of<StickerProvider>(context, listen: true);
+
     return GestureDetector(
       onScaleUpdate: (details) => updateScale(details.scale),
       onScaleEnd: (_) => commitScale(),
@@ -171,13 +277,13 @@ class _DragAreaStateState extends State<StatefulDragArea> {
           Positioned(
             left: position.dx,
             top: position.dy,
-            // left: position.dx > 0 ? position.dx : MediaQuery.of(context).size.width / 2 - 30,
-            // top: position.dy > 0 ? position.dy : MediaQuery.of(context).size.height / 2 - 100,
             child: Draggable(
               maxSimultaneousDrags: 1,
               feedback: widget.child,
               childWhenDragging: Container(),
-              onDragEnd: (details) => updatePosition(details.offset),
+              onDragEnd: (details) {
+                updatePosition(details.offset, stickerProvider.syncStickerPositions);
+              },
               child: Transform.scale(
                 scale: scale,
                 child: widget.child,

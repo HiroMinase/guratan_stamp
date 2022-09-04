@@ -188,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        addStampWidget("guratan.png", stickerProvider.stampNamePositions.length, stickerProvider.syncStickerPositions);
+                        addStampWidget("guratan_camera.png", stickerProvider.stampNamePositions.length, stickerProvider.syncStickerPositions);
                       },
                       child: Center(
                         child: Container(

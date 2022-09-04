@@ -27,7 +27,7 @@
 	<key>NSCameraUsageDescription</key>
     <string>カメラへのアクセスが必要です。</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>カメラロールへのアクセスが必要にです。</string>
+    <string>カメラロールへのアクセスが必要です。</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

@@ -79,7 +79,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(40.0),
         child: AppBar(
-          title: const Text("ぐらたんスタンプ"),
+          title: const Text("ぐらたんスタンプ", style: TextStyle(fontSize: 16)),
         ),
       ),
       body: Stack(

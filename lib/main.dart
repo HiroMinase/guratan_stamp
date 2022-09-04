@@ -64,12 +64,14 @@ class _AdvancedExampleState extends State<AdvancedExample> {
         Image.asset('assets/stickers/guratan_macaroni_pray.png'),
         Image.asset('assets/stickers/guratan_nagoya_01.png'),
         Image.asset('assets/stickers/guratan_worried.png'),
+        Image.asset('assets/stickers/guratan_macaroni_teruteru.png'),
+        Image.asset('assets/stickers/guratan_ehime_01.png'),
       ],
       key: UniqueKey(),
-      panelHeight: 180,
+      panelHeight: 200,
       panelBackgroundColor: Colors.white,
       panelStickerBackgroundColor: Theme.of(context).primaryColorLight,
-      stickerSize: 60,
+      stickerSize: 50,
       child: _image == null ? Image.network(_background) : Image.file(_image!, fit: BoxFit.cover),
     );
 

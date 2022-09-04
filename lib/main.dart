@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stick_it/stick_it.dart';
 import 'package:uuid/uuid.dart';
 
+import 'color_table.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -20,12 +22,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'ぐらたんスタンプ',
       theme: ThemeData(
-        // fontFamily: 'YuGothic',
-        // colorScheme: ColorScheme.fromSwatch(
-        //   primarySwatch: ColorTable.primaryWhiteColor,
-        // ).copyWith(
-        //   secondary: ColorTable.primaryBlackColor,
-        // ),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: ColorTable.primaryWhiteColor,
+        ).copyWith(
+          secondary: ColorTable.primaryBlackColor,
+        ),
       ),
       home: const AdvancedExample(),
     );
@@ -84,9 +85,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
             right: rightPadding,
             child: Column(
               children: [
-                ////////////////////////////////////////////////////////
-                //               SAVE IMAGE TO GALLERY                //
-                ////////////////////////////////////////////////////////
+                // 画像を保存
                 GestureDetector(
                   onTap: () async {
                     final image = await _stickIt.exportImage();
@@ -95,9 +94,9 @@ class _AdvancedExampleState extends State<AdvancedExample> {
                     final uniqueIdentifier = const Uuid().v1();
                     final file = await File('$path/$uniqueIdentifier.png').create();
                     file.writeAsBytesSync(image);
-                    GallerySaver.saveImage(file.path, albumName: 'Stick It').then((value) {
+                    GallerySaver.saveImage(file.path, albumName: 'guratan').then((value) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text("Image saved in the gallery album 'Stick It', go take a look!"),
+                        content: Text("画像を保存しました！"),
                       ));
                     });
                   },
@@ -110,9 +109,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
                 const SizedBox(
                   height: 24,
                 ),
-                ////////////////////////////////////////////////////////
-                //                  SELECT BACKGROUND                 //
-                ////////////////////////////////////////////////////////
+                // 元画像を選択
                 GestureDetector(
                   onTap: () {
                     generateModal(context);
@@ -131,6 +128,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
     );
   }
 
+  // image_picker で取得した画像を _image に保存
   Future getImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -152,9 +150,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                ////////////////////////////////////////////////////////
-                //                  IMAGE FROM GALLERY                //
-                ////////////////////////////////////////////////////////
+                // ライブラリから取り込む
                 Expanded(
                   child: InkWell(
                     onTap: () {
@@ -179,15 +175,8 @@ class _AdvancedExampleState extends State<AdvancedExample> {
                     ),
                   ),
                 ),
-                const Divider(
-                  height: 5,
-                  thickness: 3,
-                  indent: 0,
-                  endIndent: 0,
-                ),
-                ////////////////////////////////////////////////////////
-                //                 IMAGE FROM CAMERA                  //
-                ////////////////////////////////////////////////////////
+                const Divider(height: 5, thickness: 3),
+                // 写真を撮って取り込む
                 Expanded(
                   child: InkWell(
                     onTap: () {

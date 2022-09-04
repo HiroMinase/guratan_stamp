@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.6 <3.0.0"
+  sdk: ">=2.18.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -35,8 +35,19 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-  # 画像アップロード、画像取得
+  # 画像取得
   image_picker: ^0.8.2
+
+  # ステッカー
+  stick_it: ^1.0.0+2
+
+  uuid: ^3.0.6
+
+  gallery_saver: ^2.3.2
+
+  extended_image: ^6.3.0
+
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:
@@ -70,8 +81,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-assets:
-  - assets/stickers/
+  assets:
+    - assets/stickers/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -40,17 +40,9 @@ class AdvancedExample extends StatefulWidget {
 }
 
 class _AdvancedExampleState extends State<AdvancedExample> {
-  /// background image of the stick it class
-  final String _background =
-      'https://images.unsplash.com/photo-1545147986-a9d6f2ab03b5?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80';
-
-  /// used for getting images either from gallery or camera
+  final String _background = 'https://images.unsplash.com/photo-1545147986-a9d6f2ab03b5?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80';
   final _picker = ImagePicker();
-
-  /// reference used for calling the exportImage function
   late StickIt _stickIt;
-
-  /// the image picked by a user as file
   File? _image;
 
   @override

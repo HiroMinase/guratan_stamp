@@ -35,4 +35,21 @@ class ColorTable {
       900: Color(0xFF001724),
     },
   );
+
+  static const int _primaryBlueValue = 0xFFCEE7F4;
+  static const MaterialColor primaryBlueColor = MaterialColor(
+    _primaryBlueValue,
+    <int, Color>{
+      50: Color(0xFF0285d3),
+      100: Color(0xFF0279c0),
+      200: Color(0xFF026dac),
+      300: Color(0xFF016199),
+      400: Color(0xFF015485),
+      500: Color(_primaryBlueValue),
+      600: Color(0xFF013c5f),
+      700: Color(0xFF012f4b),
+      800: Color(0xFF002338),
+      900: Color(0xFF001724),
+    },
+  );
 }

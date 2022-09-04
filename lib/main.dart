@@ -49,7 +49,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
   @override
   Widget build(BuildContext context) {
     double bottomPadding = MediaQuery.of(context).size.height / 4;
-    double rightPadding = MediaQuery.of(context).size.width / 12;
+    double leftPadding = MediaQuery.of(context).size.width / 12;
     _stickIt = StickIt(
       stickerList: [
         Image.asset(
@@ -68,7 +68,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
         Image.asset('assets/stickers/guratan_ehime_01.png'),
       ],
       key: UniqueKey(),
-      panelHeight: 200,
+      panelHeight: 160,
       panelBackgroundColor: Colors.white,
       panelStickerBackgroundColor: Theme.of(context).primaryColorLight,
       stickerSize: 50,
@@ -76,15 +76,18 @@ class _AdvancedExampleState extends State<AdvancedExample> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("ぐらたんスタンプ"),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(40.0),
+        child: AppBar(
+          title: const Text("ぐらたんスタンプ"),
+        ),
       ),
       body: Stack(
         children: [
           _stickIt,
           Positioned(
             bottom: bottomPadding,
-            right: rightPadding,
+            left: leftPadding,
             child: Column(
               children: [
                 // 画像を保存
@@ -111,7 +114,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
                 const SizedBox(
                   height: 24,
                 ),
-                // 元画像を選択
+                // ベース画像を選択
                 GestureDetector(
                   onTap: () {
                     generateModal(context);

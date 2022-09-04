@@ -116,6 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
     RenderBox? getBox = context.findRenderObject() as RenderBox;
     var localPos = getBox.globalToLocal(Offset(xPosition, yPosition));
 
+    print(localPos);
+
     // TODO: ここが無理矢理すぎるのでどうにか解決したい
     // Image Widget から取得した Offset をそのまま MixImageOption に当てるだけではダメそう
     int x = localPos.dx.toInt() * 4 + 25;
